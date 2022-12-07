@@ -20,15 +20,19 @@ test_df = subset(df,split == FALSE)
 
 train_m = colMeans(train_df[IV])
 train_sd = sapply(train_df[IV],sd)
-# Feature Scaling (beneficial for visualization and normalization)
-train_df[IV] = data.frame(sapply(1:length(IV),function(v) (train_df[IV[v]]-train_m[v])/train_sd[v]))
-test_df[IV] = data.frame(sapply(1:length(IV),function(v) (test_df[IV[v]]-train_m[v])/train_sd[v]))
-
 unscale = function(df,m,sd){
   n = ncol(df)
   unscale_df = sapply(1:n,function(c) df[c] * sd[c] + m[c])
   return(data.frame(unscale_df))
 }
+myscale = function(df,m,sd){
+  n = ncol(df)
+  scale_df = sapply(1:n,function(c) (df[c] - m[c])/sd[c])
+  return(data.frame(scale_df))
+}
+# Feature Scaling (beneficial for visualization and normalization)
+train_df[IV] = myscale(train_df[IV],train_m,train_sd)
+test_df[IV] =  myscale(test_df[IV],train_m,train_sd)
 
 # Building Classifier
 classifier = glm(formula = Purchased ~ .,family = binomial,data = train_df)
